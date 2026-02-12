@@ -1,11 +1,21 @@
-import os
-from dotenv import load_dotenv
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-load_dotenv()
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file = ".env",
+        extra = "ignore",
+        env_file_encoding = "utf-8"
+    )
 
-class Config:
-    PORT = int(os.getenv("PORT", 8000))
-    DEBUG = os.getenv("DEBUG", "True").lower() == "true"
-    # Add more config variables as needed
+    GROQ_API_KEY: str
+    LLM_MODEL: str = "llama-3.3-70b-versatile"
+    LLM_TEMPERATURE: float = 0.7
+    LLM_MAX_TOKENS: int = 200
+    
+    API_HOST:str = "0.0.0.0"
+    API_PORT:int = 8000
+    
+    MAX_CONVERSATION_HISTORY:int = 20
+    INTERACTION_DISTANCE:float = 55.0
 
-config = Config()
+settings = Settings()
