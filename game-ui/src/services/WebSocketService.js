@@ -1,29 +1,35 @@
 export default class WebSocketService {
-    constructor(url) {
-        this.url = url;
+    constructor() {
         this.socket = null;
+        this.connected = false;
+        this.baseUrl = 'ws://localhost:8000';
     }
 
     connect() {
-        this.socket = new WebSocket(this.url);
-
-        this.socket.onopen = () => {
-            console.log('Connected to Game API');
-        };
-
-        this.socket.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            console.log('Message from server:', data);
-        };
-
-        this.socket.onclose = () => {
-            console.log('Disconnected from Game API');
-        };
+        return new Promise((resolve, reject) => {
+            this.socket = new WebSocket(`${this.baseUrl}/ws/chat`);
+            this.socket.onopen = () => { this.connected = true; console.log('WS connected'); resolve(); };
+            this.socket.onerror = (e) => { console.error('WS error', e); reject(e); };
+            this.socket.onclose = () => { this.connected = false; console.log('WS closed'); };
+        });
     }
 
-    send(data) {
-        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-            this.socket.send(JSON.stringify(data));
-        }
+    async sendMessage(npcId, message) {
+        if (!this.connected) await this.connect();
+
+        return new Promise((resolve) => {
+            this.socket.send(JSON.stringify({ npc_id: npcId, message }));
+
+            const chunks = [];
+            const handler = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.chunk) chunks.push(data.chunk);
+                if (data.response !== undefined) {
+                    this.socket.removeEventListener('message', handler);
+                    resolve(data);
+                }
+            };
+            this.socket.addEventListener('message', handler);
+        });
     }
 }
