@@ -1,4 +1,4 @@
-<![CDATA[<div align="center">
+<div align="center">
 
 # ⚔️ AI Village Quest
 
@@ -333,4 +333,3 @@ This project is open source and available under the [MIT License](LICENSE).
 _If you enjoyed this project, give it a ⭐!_
 
 </div>
-]]>
