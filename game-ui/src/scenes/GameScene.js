@@ -91,6 +91,20 @@ export default class GameScene extends Phaser.Scene {
             fontSize: '12px', fill: '#ffcc00', backgroundColor: '#00000088', padding: { x: 5, y: 3 }
         }).setOrigin(0.5).setScrollFactor(0).setDepth(50);
 
+        // Restart button (top-right)
+        this.restartBtn = this.add.text(740, 10, '🔄 Restart', {
+            fontSize: '14px', fill: '#fff', backgroundColor: '#cc333388',
+            padding: { x: 10, y: 6 }
+        }).setScrollFactor(0).setDepth(50).setInteractive({ useHandCursor: true });
+
+        this.restartBtn.on('pointerover', () => {
+            this.restartBtn.setStyle({ backgroundColor: '#ff4444cc' });
+        });
+        this.restartBtn.on('pointerout', () => {
+            this.restartBtn.setStyle({ backgroundColor: '#cc333388' });
+        });
+        this.restartBtn.on('pointerdown', () => this._restartGame());
+
         // NPC chat check timer (every 6 seconds try NPC-NPC conversations)
         this.time.addEvent({
             delay: 6000,
@@ -233,5 +247,26 @@ export default class GameScene extends Phaser.Scene {
         // Screen flash
         this.cameras.main.flash(500, 255, 200, 50);
         this.cameras.main.shake(300, 0.01);
+    }
+
+    async _restartGame() {
+        // Reset backend state
+        try {
+            await this.ws.resetGame();
+            console.log('✅ Backend reset');
+        } catch (e) {
+            console.warn('Could not reset backend:', e);
+        }
+
+        // Clean up dialogue
+        this.dialogueBox.hide();
+        this.inDialogue = false;
+
+        // Clean up any HTML input elements
+        const inputs = document.querySelectorAll('input[style*="z-index:9999"]');
+        inputs.forEach(el => el.remove());
+
+        // Restart the scene completely
+        this.scene.restart();
     }
 }

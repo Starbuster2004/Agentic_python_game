@@ -32,4 +32,9 @@ export default class WebSocketService {
             this.socket.addEventListener('message', handler);
         });
     }
+
+    async resetGame() {
+        const resp = await fetch('http://localhost:8000/reset-memory', { method: 'POST' });
+        return resp.json();
+    }
 }
